@@ -57,6 +57,7 @@
 /* USER CODE BEGIN Includes */
 #include "ubloxgps.h"
 #include "lcd.h"
+//#include "delay.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -87,7 +88,7 @@ static void MX_NVIC_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	u8 navigationBuffer[50];
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -117,7 +118,12 @@ int main(void)
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
   GPS_Init();
-
+  LCD_Init();
+  LED_Init();
+  POINT_COLOR=RED; 
+  LCD_Clear(BLUE);
+  
+  sprintf((char*)navigationBuffer,"PDOP:%s Satellites:%s MODE:%c","0.57","10",'N');
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -128,6 +134,16 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
+  POINT_COLOR=RED;
+  LCD_Display_Dir(1);	  
+  LCD_ShowString(40,40,200,24,24,(uint8_t*)"Navigation System");	
+  LCD_ShowString(30,70,300,16,16,(uint8_t*)navigationBuffer);
+  LCD_ShowString(30,90,300,16,16,(uint8_t*)"GPS Satellites in View:");
+  LCD_ShowString(30,110,300,16,16,(uint8_t*)"GPS");
+  LCD_ShowString(30,130,300,12,12,(uint8_t*)"2017/6/2");
+	  
+  LED0=!LED0;
+  HAL_Delay(1000);
 
   }
   /* USER CODE END 3 */
@@ -213,7 +229,24 @@ static void MX_NVIC_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/**
+  * @brief  Period elapsed callback in non blocking mode 
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(htim);
+  /* NOTE : This function Should not be modified, when the callback is needed,
+            the __HAL_TIM_PeriodElapsedCallback could be implemented in the user file
+   */
+	if(htim->Instance == htim5.Instance)
+	{
+		timeCnt++;
+	}
 
+}
 /* USER CODE END 4 */
 
 /**

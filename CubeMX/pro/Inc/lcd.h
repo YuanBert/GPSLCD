@@ -9,6 +9,7 @@ typedef uint32_t u32;
 typedef uint16_t u16;
 typedef uint8_t  u8;
 
+extern volatile u32 timeCnt;
 	 
 //LCD重要参数集
 typedef struct  

@@ -63,12 +63,15 @@
 /* USER CODE END Includes */
 
 /* USER CODE BEGIN Private defines */
+#define LED0 PAout(8)   	//LED0
+#define LED1 PDout(2)   	//LED1
 
 /* USER CODE END Private defines */
 
 void MX_GPIO_Init(void);
 
 /* USER CODE BEGIN Prototypes */
+void LED_Init(void);
 
 /* USER CODE END Prototypes */
 

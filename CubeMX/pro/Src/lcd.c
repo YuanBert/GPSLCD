@@ -5,12 +5,18 @@
 #include "font.h" 
 #include "usart.h"
 #include "gpio.h"
+#include "delay.h"
+#include "tim.h"
 
+volatile u32 timeCnt;
 
 /* us级延时函数 */
 void delay_us(u32 nus)
 {
-	
+	HAL_TIM_Base_Start_IT(&htim5);
+	timeCnt = 0;
+	while(timeCnt < nus);
+	HAL_TIM_Base_Stop_IT(&htim5);
 }
 
 //LCD的画笔颜色和背景色	   
