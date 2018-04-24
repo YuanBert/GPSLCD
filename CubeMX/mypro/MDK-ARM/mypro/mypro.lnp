@@ -1,0 +1,27 @@
+--cpu Cortex-M3
+"mypro\startup_stm32f103xe.o"
+"mypro\stm32f1xx_hal_tim_ex.o"
+"mypro\stm32f1xx_hal_gpio.o"
+"mypro\stm32f1xx_hal_tim.o"
+"mypro\stm32f1xx_hal_rcc.o"
+"mypro\stm32f1xx_hal_dma.o"
+"mypro\stm32f1xx_hal_cortex.o"
+"mypro\stm32f1xx_hal.o"
+"mypro\stm32f1xx_hal_gpio_ex.o"
+"mypro\stm32f1xx_hal_flash.o"
+"mypro\stm32f1xx_hal_rcc_ex.o"
+"mypro\stm32f1xx_hal_flash_ex.o"
+"mypro\stm32f1xx_hal_pwr.o"
+"mypro\stm32f1xx_hal_uart.o"
+"mypro\system_stm32f1xx.o"
+"mypro\main.o"
+"mypro\tim.o"
+"mypro\dma.o"
+"mypro\usart.o"
+"mypro\gpio.o"
+"mypro\stm32f1xx_hal_msp.o"
+"mypro\stm32f1xx_it.o"
+--library_type=microlib --strict --scatter "mypro\mypro.sct"
+--summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
+--info sizes --info totals --info unused --info veneers
+--list "mypro.map" -o mypro\mypro.axf

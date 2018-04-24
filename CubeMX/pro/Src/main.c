@@ -71,6 +71,9 @@ uint8_t PositingInfo[30];
 uint8_t GroundSpeedInfo[30];
 uint8_t GroundCourseinfo[30];
 
+uint16_t TimCnt;
+uint16_t TimCntFlag;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -115,19 +118,23 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
   MX_TIM5_Init();
   MX_USB_DEVICE_Init();
+  MX_TIM3_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
-  MPU6050_Init();
+  //MPU6050_Init();
   GPS_Init();
   LCD_Init();
   LED_Init();
   POINT_COLOR=RED; 
   LCD_Clear(BLUE);
-  LCD_Display_Dir(1);	
+  LCD_Display_Dir(1);
+  HAL_TIM_Base_Start_IT(&htim3);  
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -138,8 +145,8 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-  	GPS_parseGpsBuffer();
-	GPS_printGpsBuffer();
+//  GPS_parseGpsBuffer();
+//	GPS_printGpsBuffer();
 //  LCD_ShowString(30,70,300,16,16,(uint8_t*)navigationBuffer);
 //  LCD_ShowString(30,90,300,16,16,(uint8_t*)"GPS Satellites in View:");
 //  LCD_ShowString(30,110,300,16,16,(uint8_t*)"GPS");
@@ -147,12 +154,20 @@ int main(void)
 	  
 //  LED0=!LED0;
 //  HAL_Delay(1000);
-	  
-	LCD_ShowString(5,5,240,12,12,(uint8_t*)UTC);//显示UTC时间信息
-	LCD_ShowString(40,40,200,24,24,(uint8_t*)"Navigation System");
-	LCD_ShowString(30,90,300,16,16,PositingInfo);
-	LCD_ShowString(30,110,300,16,16,LatLongInfo);
-	LCD_ShowString(30,130,300,16,16,GroundSpeedInfo);
+	if(TimCntFlag)
+	{
+		//printf("*********************\r\n");
+		POINT_COLOR=RED; 
+		LCD_Display_Dir(1);
+		LCD_ShowString(5,5,240,12,12,(uint8_t*)UTC);//显示UTC时间信息
+		LCD_ShowString(40,40,200,24,24,(uint8_t*)"Navigation System");
+		LCD_ShowString(30,90,300,16,16,PositingInfo);
+		LCD_ShowString(30,110,300,16,16,LatLongInfo);
+		LCD_ShowString(30,130,300,16,16,GroundSpeedInfo);
+		
+		TimCntFlag = 0;
+		LED0=!LED0;
+	}
 
   }
   /* USER CODE END 3 */
@@ -253,6 +268,16 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if(htim->Instance == htim5.Instance)
 	{
 		timeCnt++;
+	}
+	
+	if(htim->Instance == htim3.Instance)
+	{
+		TimCnt++;
+		if(TimCnt > 10)
+		{
+			TimCntFlag = 1;
+			TimCnt = 0;
+		}
 	}
 
 }

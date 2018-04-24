@@ -125,8 +125,8 @@ void GPS_parseGpsBuffer(void)
 	 if(Save_Data.isGetData)
 	 {
 		 Save_Data.isGetData = false;
-		 //printf("*********************\r\n");
-		 //printf(Save_Data.GPS_Buffer);
+		 printf("*********************\r\n");
+		 printf(Save_Data.GPS_Buffer);
 		 
 		 for(i = 0; i <= 8; i++)
 		 {
@@ -186,6 +186,7 @@ void GPS_printGpsBuffer(void)
 		Save_Data.isParseData = false;
 		/* printf() */
 		sprintf((char*)UTC,"UTC:%s",Save_Data.UTCTime);
+		printf("UTC:%s",Save_Data.UTCTime);
 		
 		if(Save_Data.isUsefull)
 		{
@@ -255,65 +256,66 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	
 	if(USART1 == huart->Instance)
 	{
+		HAL_UART_Transmit(&huart1,revDataBuffer,1,0xFFFF);
 //		while(0 == (USART1->SR & 0X40));
 //		USART1->DR = revDataBuffer[0];
 		
-		if('$' == revDataBuffer[0])
-		{
-			point1 = 0;
-		}
-		
-		USART_RX_BUF[point1++] = revDataBuffer[0];
-		/* $GPRMC */
-		if('$' == USART_RX_BUF[0] && 'M' == USART_RX_BUF[4] && 'C' == USART_RX_BUF[5])
-		{
-			if('\n' == revDataBuffer[0])
-			{
-				memset(Save_Data.GPS_Buffer,0,GPS_Buffer_Length);
-				memcpy(Save_Data.GPS_Buffer,USART_RX_BUF,point1);
-				Save_Data.isGetData = true;
-				point1 = 0;
-				memset(USART_RX_BUF, 0 , USART_REC_LEN);
-			}
-		}
-		
-		/* $GPGSA */
-		if('$' == USART_RX_BUF[0] && 'S' == USART_RX_BUF[4] && 'A' == USART_RX_BUF[5])
-		{
-			if('\n' == revDataBuffer[0])
-			{
-				memset(GPGSABUffer,0,65);
-				memcpy(GPGSABUffer,USART_RX_BUF,point1);
-				//
-				point1 = 0;
-				GPGSAFlag = 1;
-				memset(USART_RX_BUF,0,USART_REC_LEN);
-			}
-		}
-		
-		/* $GPGSV */
-		if('$' == USART_RX_BUF[0] && 'S' == USART_RX_BUF[4] && 'V' == USART_RX_BUF[5])
-		{
-			if('\n' == revDataBuffer[0])
-			{
-				memset(GPGSVBuffer,0,210);
-				memcpy(GPGSVBuffer,USART_RX_BUF,point1);
-				//
-				point1 = 0;
-				GPGSVFlag = 1;
-				memset(USART_RX_BUF,0,USART_REC_LEN);
-			}
-		}
-		
-		if(point1 >= USART_REC_LEN)
-		{
-			point1 = USART_REC_LEN;
-		}
+//		if('$' == revDataBuffer[0])
+//		{
+//			point1 = 0;
+//		}
+//		
+//		USART_RX_BUF[point1++] = revDataBuffer[0];
+//		/* $GPRMC */
+//		if('$' == USART_RX_BUF[0] && 'M' == USART_RX_BUF[4] && 'C' == USART_RX_BUF[5])
+//		{
+//			if('\n' == revDataBuffer[0])
+//			{
+//				memset(Save_Data.GPS_Buffer,0,GPS_Buffer_Length);
+//				memcpy(Save_Data.GPS_Buffer,USART_RX_BUF,point1);
+//				Save_Data.isGetData = true;
+//				point1 = 0;
+//				memset(USART_RX_BUF, 0 , USART_REC_LEN);
+//			}
+//		}
+//		
+//		/* $GPGSA */
+//		if('$' == USART_RX_BUF[0] && 'S' == USART_RX_BUF[4] && 'A' == USART_RX_BUF[5])
+//		{
+//			if('\n' == revDataBuffer[0])
+//			{
+//				memset(GPGSABUffer,0,65);
+//				memcpy(GPGSABUffer,USART_RX_BUF,point1);
+//				//
+//				point1 = 0;
+//				GPGSAFlag = 1;
+//				memset(USART_RX_BUF,0,USART_REC_LEN);
+//			}
+//		}
+//		
+//		/* $GPGSV */
+//		if('$' == USART_RX_BUF[0] && 'S' == USART_RX_BUF[4] && 'V' == USART_RX_BUF[5])
+//		{
+//			if('\n' == revDataBuffer[0])
+//			{
+//				memset(GPGSVBuffer,0,210);
+//				memcpy(GPGSVBuffer,USART_RX_BUF,point1);
+//				//
+//				point1 = 0;
+//				GPGSVFlag = 1;
+//				memset(USART_RX_BUF,0,USART_REC_LEN);
+//			}
+//		}
+//		
+//		if(point1 >= USART_REC_LEN)
+//		{
+//			point1 = USART_REC_LEN;
+//		}
 		
 		while(HAL_OK != HAL_UART_Receive_IT(&huart1, revDataBuffer, 1));
 	}
 	/* 处理MPU6050数据 */
-	HAL_MPU6050_RxCpltCallback(huart);
+//	HAL_MPU6050_RxCpltCallback(huart);
 }
 
 #endif
