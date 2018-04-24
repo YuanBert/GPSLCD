@@ -47,12 +47,25 @@
 /* USER CODE BEGIN Includes */
 #include "string.h"
 #include "stdlib.h"
+#include "mpu6050.h"
+#include "gps.h"
+#include "lcd.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+uint8_t MPU6050Buffer[30];
+uint8_t MPU6050Buffer1[30];
+uint16_t gTim3Cnt;
+uint8_t gTim3Flag;
+
+uint8_t UTC[30];
+uint8_t LatLongInfo[30];
+uint8_t PositingInfo[30];
+uint8_t GroundSpeedInfo[30];
+uint8_t GroundCourseinfo[30];
 
 /* USER CODE END PV */
 
@@ -77,9 +90,7 @@ static void MX_NVIC_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	uint8_t temBuf[256];
-	uint16_t i;
-
+	
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -109,7 +120,16 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
+  LCD_Init();
+  LED_Init();
+  MPU6050_Init();
+    POINT_COLOR=RED; 
+  LCD_Clear(BLUE);
+  LCD_Display_Dir(1);
+  HAL_TIM_Base_Start_IT(&htim3);
+  //HAL_TIM_Base_Start_IT(&htim5);
   __HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
+  __HAL_UART_ENABLE_IT(&huart2,UART_IT_RXNE);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -120,14 +140,32 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-  if(gRevFlag)
-  {
-	memcpy(temBuf,RevRxDataBuffer,gCount);
-	gRevFlag = 0;
-	i = gCount;
-	gCount = 0;
-	HAL_UART_Transmit_IT(&huart1,temBuf,i);
-  }
+	  GPS_dataPrase();
+	  MPU6050_PraseData();
+	  sprintf((char*)MPU6050Buffer,"ax=%3.2f ay =%3.2f az=%3.2f",gMPU6050_Info.ax,gMPU6050_Info.ay,gMPU6050_Info.az);
+	  sprintf((char*)MPU6050Buffer1,"wx=%3.2f wy =%3.2f wz=%3.2f",gMPU6050_Info.wx,gMPU6050_Info.wy,gMPU6050_Info.wz);
+	  
+	  if(1 == gTim3Flag)
+	  {
+		gTim3Flag = 0;
+		POINT_COLOR=RED; 
+		LCD_Display_Dir(1);
+		LCD_ShowString(5,5,360,12,12,(uint8_t*)UTC);//显示UTC时间信息
+		LCD_ShowString(40,40,200,24,24,(uint8_t*)"Navigation System");
+		LCD_ShowString(30,90,300,16,16,PositingInfo);
+		
+		LCD_ShowString(30,110,300,16,16,LatLongInfo);
+		LCD_ShowString(30,130,300,16,16,GroundSpeedInfo);
+		LCD_ShowString(20,150,360,12,12,MPU6050Buffer);  
+		LCD_ShowString(20,170,360,12,12,MPU6050Buffer1);  
+		  
+		//sprintf((char*)MPU6050Buffer,"\r\nax=%.3fay =%.3faz=%.3f\r\n",gMPU6050_Info.ax,gMPU6050_Info.ay,gMPU6050_Info.az);
+		//HAL_UART_Transmit_IT(&huart1,MPU6050Buffer,30);
+		//HAL_Delay(10);
+		//HAL_UART_Transmit_IT(&huart1,(uint8_t*)Save_Data.UTCTime,5);
+		//HAL_UART_Transmit_IT(&huart1,(uint8_t*)PDOPString,4);
+		LED0=!LED0;
+	  }
 
   }
   /* USER CODE END 3 */
@@ -211,7 +249,34 @@ static void MX_NVIC_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
+/**
+  * @brief  Period elapsed callback in non blocking mode 
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* Prevent unused argument(s) compilation warning */
+  UNUSED(htim);
+  /* NOTE : This function Should not be modified, when the callback is needed,
+            the __HAL_TIM_PeriodElapsedCallback could be implemented in the user file
+   */
+	if(htim->Instance == htim5.Instance)
+	{
+		timeCnt++;
+	}
+	
+	if(htim->Instance == htim3.Instance)
+	{
+		gTim3Cnt++;
+		if(gTim3Cnt > 10)
+		{
+			gTim3Flag = 1;
+			gTim3Cnt = 0;
+		}
+	}
 
+}
 /* USER CODE END 4 */
 
 /**

@@ -135,6 +135,8 @@ int main(void)
   LCD_Clear(BLUE);
   LCD_Display_Dir(1);
   HAL_TIM_Base_Start_IT(&htim3);  
+  __HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
+  __HAL_UART_ENABLE_IT(&huart2,UART_IT_RXNE);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -145,8 +147,8 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-//  GPS_parseGpsBuffer();
-//	GPS_printGpsBuffer();
+    GPS_parseGpsBuffer();
+	GPS_printGpsBuffer();
 //  LCD_ShowString(30,70,300,16,16,(uint8_t*)navigationBuffer);
 //  LCD_ShowString(30,90,300,16,16,(uint8_t*)"GPS Satellites in View:");
 //  LCD_ShowString(30,110,300,16,16,(uint8_t*)"GPS");
@@ -154,6 +156,7 @@ int main(void)
 	  
 //  LED0=!LED0;
 //  HAL_Delay(1000);
+	  
 	if(TimCntFlag)
 	{
 		//printf("*********************\r\n");

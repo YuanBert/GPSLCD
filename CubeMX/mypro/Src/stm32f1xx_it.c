@@ -38,6 +38,11 @@
 /* USER CODE BEGIN 0 */
 #include "usart.h"
 #include "string.h"
+#include "mpu6050.h"
+
+uint8_t temp[11];
+
+extern void HAL_MPU6050_RxCpltCallback(UART_HandleTypeDef *huart);
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -257,13 +262,34 @@ void USART1_IRQHandler(void)
 		gCount = 0;
 	}
 	RevRxDataBuffer[gCount++] = rev;
-	if('$' == RevRxDataBuffer[0] && 'M' == RevRxDataBuffer[4] && 'C' == RevRxDataBuffer[5])
+	
+		/* $GPGSV */
+	if('$' == RevRxDataBuffer[0] && 'S' == RevRxDataBuffer[4] && 'V' == RevRxDataBuffer[5])
 	{
 		if('\n' == rev)
 		{
 			gRevFlag = 1;
 		}
 	}
+	
+	/* $GPRMC */
+	if('$' == RevRxDataBuffer[0] && 'M' == RevRxDataBuffer[4] && 'C' == RevRxDataBuffer[5])
+	{
+		if('\n' == rev)
+		{
+			gRevFlag = 2;
+		}
+	}
+	/* $GPGSA */
+	if('$' == RevRxDataBuffer[0] && 'S' == RevRxDataBuffer[4] && 'A' == RevRxDataBuffer[5])
+	{
+		if('\n' == rev)
+		{
+			gRevFlag = 3;
+		}
+	}
+		
+
 	
 	if(gCount >= USART_REC_LEN)
 	{
@@ -272,7 +298,7 @@ void USART1_IRQHandler(void)
 	
   
   /* USER CODE END USART1_IRQn 0 */
-  //HAL_UART_IRQHandler(&huart1);
+  HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
 
   /* USER CODE END USART1_IRQn 1 */
@@ -283,8 +309,26 @@ void USART1_IRQHandler(void)
 */
 void USART2_IRQHandler(void)
 {
+	uint8_t rev;
   /* USER CODE BEGIN USART2_IRQn 0 */
-
+  	if(RESET != __HAL_UART_GET_IT_SOURCE(&huart2,UART_IT_RXNE))
+	{
+		rev = USART2->DR;
+	}
+	temp[counter] = rev;
+	if(11 == counter)
+	{
+		memcpy(Re_buf,temp,11);
+		counter = 0;
+		sign = 1;
+	}
+	counter++;
+	if(1 == counter && 0x55 != temp[0])
+	{
+		counter = 0;
+	}
+	
+	
   /* USER CODE END USART2_IRQn 0 */
   HAL_UART_IRQHandler(&huart2);
   /* USER CODE BEGIN USART2_IRQn 1 */

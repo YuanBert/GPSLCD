@@ -92,7 +92,6 @@ void GPS_Init(void)
 {
 	MX_USART1_UART_Init();
 	CLR_Buf();
-	HAL_UART_Receive_IT(&huart1, revDataBuffer, 1);
 }
 
 uint8_t Hand(char *a)	//串口命令识别函数
@@ -122,11 +121,15 @@ void GPS_parseGpsBuffer(void)
 	char *subString;
 	char *subStringNext;
 	char i = 0;
+	
+	GPS_PraseGPGSV();
+	GPS_PraseGPGSA();
+	
 	 if(Save_Data.isGetData)
 	 {
 		 Save_Data.isGetData = false;
-		 printf("*********************\r\n");
-		 printf(Save_Data.GPS_Buffer);
+//		 printf("*********************\r\n");
+//		 printf(Save_Data.GPS_Buffer);
 		 
 		 for(i = 0; i <= 8; i++)
 		 {
@@ -172,15 +175,12 @@ void GPS_parseGpsBuffer(void)
 			
 		 }
 	 }
+	 
 }
 
 
 void GPS_printGpsBuffer(void)
-{
-	GPS_PraseGPGSV();
-	GPS_PraseGPGSA();
-	
-	
+{		
 	if(Save_Data.isParseData)
 	{
 		Save_Data.isParseData = false;
@@ -221,24 +221,24 @@ void clrStruct()
 	memset(Save_Data.Ground_Course,0,Ground_Course_Length);
 }
 
-void GPS_Callback(void)
-{
-    uint32_t timeout = 0;
-	while (HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY)
-	{
-	 timeout++;
-     if(timeout>HAL_MAX_DELAY) break;		
-	}
-		
-//	while(0 == (USART1->SR & 0X40));
-	USART1->DR = revDataBuffer[0];	
-	
-	while(HAL_UART_Receive_IT(&huart1, revDataBuffer, 1) != HAL_OK)
-	{
-	 timeout++;
-	 if(timeout>HAL_MAX_DELAY) break;	
-	}	
-}
+//void GPS_Callback(void)
+//{
+//    uint32_t timeout = 0;
+//	while (HAL_UART_GetState(&huart1) != HAL_UART_STATE_READY)
+//	{
+//	 timeout++;
+//     if(timeout>HAL_MAX_DELAY) break;		
+//	}
+//		
+////	while(0 == (USART1->SR & 0X40));
+//	USART1->DR = revDataBuffer[0];	
+//	
+//	while(HAL_UART_Receive_IT(&huart1, revDataBuffer, 1) != HAL_OK)
+//	{
+//	 timeout++;
+//	 if(timeout>HAL_MAX_DELAY) break;	
+//	}	
+//}
 
 /**
   * @brief  Rx Transfer completed callbacks.
@@ -246,76 +246,76 @@ void GPS_Callback(void)
   *                the configuration information for the specified UART module.
   * @retval None
   */
-void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
-{
-  /* Prevent unused argument(s) compilation warning */
-  UNUSED(huart);
-  /* NOTE: This function Should not be modified, when the callback is needed,
-           the HAL_UART_RxCpltCallback could be implemented in the user file
-   */
-	
-	if(USART1 == huart->Instance)
-	{
-		HAL_UART_Transmit(&huart1,revDataBuffer,1,0xFFFF);
-//		while(0 == (USART1->SR & 0X40));
-//		USART1->DR = revDataBuffer[0];
-		
-//		if('$' == revDataBuffer[0])
-//		{
-//			point1 = 0;
-//		}
+//void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
+//{
+//  /* Prevent unused argument(s) compilation warning */
+//  UNUSED(huart);
+//  /* NOTE: This function Should not be modified, when the callback is needed,
+//           the HAL_UART_RxCpltCallback could be implemented in the user file
+//   */
+//	
+//	if(USART1 == huart->Instance)
+//	{
+//		HAL_UART_Transmit(&huart1,revDataBuffer,1,0xFFFF);
+////		while(0 == (USART1->SR & 0X40));
+////		USART1->DR = revDataBuffer[0];
 //		
-//		USART_RX_BUF[point1++] = revDataBuffer[0];
-//		/* $GPRMC */
-//		if('$' == USART_RX_BUF[0] && 'M' == USART_RX_BUF[4] && 'C' == USART_RX_BUF[5])
-//		{
-//			if('\n' == revDataBuffer[0])
-//			{
-//				memset(Save_Data.GPS_Buffer,0,GPS_Buffer_Length);
-//				memcpy(Save_Data.GPS_Buffer,USART_RX_BUF,point1);
-//				Save_Data.isGetData = true;
-//				point1 = 0;
-//				memset(USART_RX_BUF, 0 , USART_REC_LEN);
-//			}
-//		}
+////		if('$' == revDataBuffer[0])
+////		{
+////			point1 = 0;
+////		}
+////		
+////		USART_RX_BUF[point1++] = revDataBuffer[0];
+////		/* $GPRMC */
+////		if('$' == USART_RX_BUF[0] && 'M' == USART_RX_BUF[4] && 'C' == USART_RX_BUF[5])
+////		{
+////			if('\n' == revDataBuffer[0])
+////			{
+////				memset(Save_Data.GPS_Buffer,0,GPS_Buffer_Length);
+////				memcpy(Save_Data.GPS_Buffer,USART_RX_BUF,point1);
+////				Save_Data.isGetData = true;
+////				point1 = 0;
+////				memset(USART_RX_BUF, 0 , USART_REC_LEN);
+////			}
+////		}
+////		
+////		/* $GPGSA */
+////		if('$' == USART_RX_BUF[0] && 'S' == USART_RX_BUF[4] && 'A' == USART_RX_BUF[5])
+////		{
+////			if('\n' == revDataBuffer[0])
+////			{
+////				memset(GPGSABUffer,0,65);
+////				memcpy(GPGSABUffer,USART_RX_BUF,point1);
+////				//
+////				point1 = 0;
+////				GPGSAFlag = 1;
+////				memset(USART_RX_BUF,0,USART_REC_LEN);
+////			}
+////		}
+////		
+////		/* $GPGSV */
+////		if('$' == USART_RX_BUF[0] && 'S' == USART_RX_BUF[4] && 'V' == USART_RX_BUF[5])
+////		{
+////			if('\n' == revDataBuffer[0])
+////			{
+////				memset(GPGSVBuffer,0,210);
+////				memcpy(GPGSVBuffer,USART_RX_BUF,point1);
+////				//
+////				point1 = 0;
+////				GPGSVFlag = 1;
+////				memset(USART_RX_BUF,0,USART_REC_LEN);
+////			}
+////		}
+////		
+////		if(point1 >= USART_REC_LEN)
+////		{
+////			point1 = USART_REC_LEN;
+////		}
 //		
-//		/* $GPGSA */
-//		if('$' == USART_RX_BUF[0] && 'S' == USART_RX_BUF[4] && 'A' == USART_RX_BUF[5])
-//		{
-//			if('\n' == revDataBuffer[0])
-//			{
-//				memset(GPGSABUffer,0,65);
-//				memcpy(GPGSABUffer,USART_RX_BUF,point1);
-//				//
-//				point1 = 0;
-//				GPGSAFlag = 1;
-//				memset(USART_RX_BUF,0,USART_REC_LEN);
-//			}
-//		}
-//		
-//		/* $GPGSV */
-//		if('$' == USART_RX_BUF[0] && 'S' == USART_RX_BUF[4] && 'V' == USART_RX_BUF[5])
-//		{
-//			if('\n' == revDataBuffer[0])
-//			{
-//				memset(GPGSVBuffer,0,210);
-//				memcpy(GPGSVBuffer,USART_RX_BUF,point1);
-//				//
-//				point1 = 0;
-//				GPGSVFlag = 1;
-//				memset(USART_RX_BUF,0,USART_REC_LEN);
-//			}
-//		}
-//		
-//		if(point1 >= USART_REC_LEN)
-//		{
-//			point1 = USART_REC_LEN;
-//		}
-		
-		while(HAL_OK != HAL_UART_Receive_IT(&huart1, revDataBuffer, 1));
-	}
-	/* 处理MPU6050数据 */
-//	HAL_MPU6050_RxCpltCallback(huart);
-}
+//		while(HAL_OK != HAL_UART_Receive_IT(&huart1, revDataBuffer, 1));
+//	}
+//	/* 处理MPU6050数据 */
+////	HAL_MPU6050_RxCpltCallback(huart);
+//}
 
 #endif

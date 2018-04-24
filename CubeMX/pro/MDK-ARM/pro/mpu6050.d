@@ -8,13 +8,13 @@ pro\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h
 pro\mpu6050.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h
 pro\mpu6050.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xe.h
 pro\mpu6050.o: ../Drivers/CMSIS/Include/core_cm3.h
-pro\mpu6050.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+pro\mpu6050.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 pro\mpu6050.o: ../Drivers/CMSIS/Include/core_cmInstr.h
 pro\mpu6050.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
 pro\mpu6050.o: ../Drivers/CMSIS/Include/core_cmFunc.h
 pro\mpu6050.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h
 pro\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
-pro\mpu6050.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+pro\mpu6050.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 pro\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h
 pro\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h
 pro\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h
@@ -32,4 +32,4 @@ pro\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_ll_usb.h
 pro\mpu6050.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pcd_ex.h
 pro\mpu6050.o: ../Inc/usart.h
 pro\mpu6050.o: ../Inc/gpio.h
-pro\mpu6050.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h
+pro\mpu6050.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\string.h

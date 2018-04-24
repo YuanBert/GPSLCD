@@ -47,6 +47,11 @@ typedef struct SaveData
 extern char     rxdatabufer;
 extern uint16_t point1;
 extern _SaveData Save_Data;
+extern uint8_t GPGSAFlag;
+extern uint8_t GPGSABUffer[65];
+
+extern uint8_t GPGSVFlag;
+extern uint8_t GPGSVBuffer[210];
 //
 
 void CLR_Buf(void);

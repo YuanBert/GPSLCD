@@ -36,7 +36,7 @@
 #include "stm32f1xx_it.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "ubloxgps.h"
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -244,7 +244,63 @@ void TIM3_IRQHandler(void)
 void USART1_IRQHandler(void)
 {
   /* USER CODE BEGIN USART1_IRQn 0 */
-
+	uint8_t rev;
+	if(RESET != __HAL_UART_GET_IT_SOURCE(&huart1,UART_IT_RXNE))
+	{
+		rev = USART1->DR;
+	}
+		if('$' == rev)
+		{
+			point1 = 0;
+		}
+		
+		USART_RX_BUF[point1++] = rev;
+		/* $GPRMC */
+		if('$' == USART_RX_BUF[0] && 'M' == USART_RX_BUF[4] && 'C' == USART_RX_BUF[5])
+		{
+			if('\n' == rev)
+			{
+				memset(Save_Data.GPS_Buffer,0,GPS_Buffer_Length);
+				memcpy(Save_Data.GPS_Buffer,USART_RX_BUF,point1);
+				Save_Data.isGetData = true;
+				point1 = 0;
+				memset(USART_RX_BUF, 0 , USART_REC_LEN);
+			}
+		}
+		
+		/* $GPGSA */
+		if('$' == USART_RX_BUF[0] && 'S' == USART_RX_BUF[4] && 'A' == USART_RX_BUF[5])
+		{
+			if('\n' == rev)
+			{
+				memset(GPGSABUffer,0,65);
+				memcpy(GPGSABUffer,USART_RX_BUF,point1);
+				//
+				point1 = 0;
+				GPGSAFlag = 1;
+				memset(USART_RX_BUF,0,USART_REC_LEN);
+			}
+		}
+		
+		/* $GPGSV */
+		if('$' == USART_RX_BUF[0] && 'S' == USART_RX_BUF[4] && 'V' == USART_RX_BUF[5])
+		{
+			if('\n' == rev)
+			{
+				memset(GPGSVBuffer,0,210);
+				memcpy(GPGSVBuffer,USART_RX_BUF,point1);
+				//
+				point1 = 0;
+				GPGSVFlag = 1;
+				memset(USART_RX_BUF,0,USART_REC_LEN);
+			}
+		}
+		
+		if(point1 >= USART_REC_LEN)
+		{
+			point1 = USART_REC_LEN;
+		}	
+	
   /* USER CODE END USART1_IRQn 0 */
   HAL_UART_IRQHandler(&huart1);
   /* USER CODE BEGIN USART1_IRQn 1 */
