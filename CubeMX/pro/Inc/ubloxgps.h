@@ -26,6 +26,8 @@ extern uint16_t	USART_RX_STA;
 #define N_S_Length			2
 #define longitude_Length	12
 #define E_W_Length			2
+#define Ground_Speed_Length  5
+#define Ground_Course_Length 5
 
 typedef struct SaveData
 {
@@ -37,6 +39,8 @@ typedef struct SaveData
 	char N_S[N_S_Length];
 	char longitude[longitude_Length];
 	char E_W[E_W_Length];
+	char Ground_Speed[Ground_Speed_Length];
+	char Ground_Course[Ground_Course_Length];
 	char isUsefull;
 }_SaveData;
 

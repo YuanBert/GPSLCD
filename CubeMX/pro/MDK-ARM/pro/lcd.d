@@ -1,7 +1,7 @@
 pro\lcd.o: ..\Src\lcd.c
 pro\lcd.o: ../Inc/main.h
 pro\lcd.o: ../Inc/lcd.h
-pro\lcd.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+pro\lcd.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 pro\lcd.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
 pro\lcd.o: ../Inc/stm32f1xx_hal_conf.h
 pro\lcd.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc.h
@@ -9,13 +9,13 @@ pro\lcd.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_def.h
 pro\lcd.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f1xx.h
 pro\lcd.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/stm32f103xe.h
 pro\lcd.o: ../Drivers/CMSIS/Include/core_cm3.h
-pro\lcd.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
+pro\lcd.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdint.h
 pro\lcd.o: ../Drivers/CMSIS/Include/core_cmInstr.h
 pro\lcd.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
 pro\lcd.o: ../Drivers/CMSIS/Include/core_cmFunc.h
 pro\lcd.o: ../Drivers/CMSIS/Device/ST/STM32F1xx/Include/system_stm32f1xx.h
 pro\lcd.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal.h
-pro\lcd.o: d:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
+pro\lcd.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdio.h
 pro\lcd.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_rcc_ex.h
 pro\lcd.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio.h
 pro\lcd.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_gpio_ex.h

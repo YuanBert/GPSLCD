@@ -1,13 +1,80 @@
 #include "ubloxgps.h"
 #include "usart.h"
+#include "mpu6050.h"
+#include "lcd.h"
 
+
+extern uint8_t UTC[20];
+extern uint8_t LatLongInfo[30];
+extern uint8_t PositingInfo[30];
+extern uint8_t GroundSpeedInfo[30];
+extern uint8_t GroundCourseinfo[30];
+
+uint8_t PDOPString[4];
+uint8_t SIViewString[2];
 
 uint8_t revDataBuffer[10];
+
+uint8_t GPGSAFlag;
+uint8_t GPGSABUffer[65];
+
+uint8_t GPGSVFlag;
+uint8_t GPGSVBuffer[210];
 
 char     rxdatabufer;
 uint16_t point1 = 0;
 
 _SaveData Save_Data;
+
+static void GPS_PraseGPGSV(void)
+{
+	char *subString;
+	char *subStringNext;
+	char i = 0;
+	if(0 == GPGSVFlag)
+	{
+		return;
+	}
+	GPGSVFlag = 0;
+	subString = (char*)GPGSVBuffer;
+	while(NULL != (subStringNext = strstr(subString,",")))
+	{
+		i++;
+		if(4 == i)
+		{
+			memcpy(SIViewString,subString,subStringNext-subString);
+			break;
+		}
+		subString = subStringNext;	
+	}	
+	//
+	
+}
+
+static void GPS_PraseGPGSA(void)
+{
+	char *subString;
+	char *subStringNext;
+	char i = 0;
+	if(0 == GPGSAFlag)
+	{
+		return;
+	}
+	GPGSAFlag = 0;
+	subString = (char*)GPGSABUffer;
+	while(NULL != (subStringNext = strstr(subString,",")))
+	{
+		i++;
+		if(16 == i)
+		{
+			memcpy(PDOPString,subString,subStringNext-subString);
+			break;
+		}
+		subString = subStringNext;
+		subString++;
+	}
+	//
+}
 
 //重定义fputc函数
 int fputc(int ch, FILE *f)
@@ -58,10 +125,10 @@ void GPS_parseGpsBuffer(void)
 	 if(Save_Data.isGetData)
 	 {
 		 Save_Data.isGetData = false;
-		 printf("*********************\r\n");
+		 //printf("*********************\r\n");
 		 //printf(Save_Data.GPS_Buffer);
 		 
-		 for(i = 0; i <= 6; i++)
+		 for(i = 0; i <= 8; i++)
 		 {
 			if(0 == i)
 			{
@@ -83,7 +150,9 @@ void GPS_parseGpsBuffer(void)
 						case 3:memcpy(Save_Data.latitude, subString, subStringNext - subString);break;	//获取维度信息
 						case 4:memcpy(Save_Data.N_S, subString, subStringNext - subString);break;	//get N/S
 						case 5:memcpy(Save_Data.longitude, subString, subStringNext - subString);break;	//获取经度信息
-						case 6:memcpy(Save_Data.E_W, subString, subStringNext - subString);break;	//Get E/W	
+						case 6:memcpy(Save_Data.E_W, subString, subStringNext - subString);break;	//Get E/W
+						case 7:memcpy(Save_Data.Ground_Speed,subString,subStringNext-subString);break;	//获取地面速率
+						case 8:memcpy(Save_Data.Ground_Course,subString,subStringNext-subString);break;	//获取地面航向，一真北为参考基准
 							
 						default:break;
 					}
@@ -108,21 +177,30 @@ void GPS_parseGpsBuffer(void)
 
 void GPS_printGpsBuffer(void)
 {
+	GPS_PraseGPGSV();
+	GPS_PraseGPGSA();
+	
+	
 	if(Save_Data.isParseData)
 	{
 		Save_Data.isParseData = false;
 		/* printf() */
+		sprintf((char*)UTC,"UTC:%s",Save_Data.UTCTime);
 		
 		if(Save_Data.isUsefull)
 		{
 			Save_Data.isUsefull = false;
 			/* printf GSP information */
-			
+			sprintf((char *)PositingInfo,"PDOP:%s Satellites:%s MODE:%c",PDOPString,SIViewString,'G');
+			sprintf((char *)LatLongInfo,"%s:%s %s:%s",Save_Data.latitude,Save_Data.E_W,Save_Data.longitude,Save_Data.N_S);
+			sprintf((char *)GroundSpeedInfo,"%s knot",Save_Data.Ground_Speed);
 		}
 		else
 		{
 			//printf("GPS DATA is not usefull! \r\n");
-		}
+			sprintf((char *)PositingInfo,"PDOP:%s Satellites:%s MODE:%c",PDOPString,SIViewString,'N');
+			
+		}	
 	}
 }
 
@@ -137,7 +215,9 @@ void clrStruct()
 	memset(Save_Data.latitude,0,latitude_Length);
 	memset(Save_Data.N_S, 0, N_S_Length);
 	memset(Save_Data.longitude, 0, longitude_Length);
-	memset(Save_Data.E_W, 0, E_W_Length);	
+	memset(Save_Data.E_W, 0, E_W_Length);
+	memset(Save_Data.Ground_Speed,0,Ground_Speed_Length);
+	memset(Save_Data.Ground_Course,0,Ground_Course_Length);
 }
 
 void GPS_Callback(void)
@@ -175,8 +255,9 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 	
 	if(USART1 == huart->Instance)
 	{
-		while(0 == (USART1->SR & 0X40));
-		USART1->DR = revDataBuffer[0];
+//		while(0 == (USART1->SR & 0X40));
+//		USART1->DR = revDataBuffer[0];
+		
 		if('$' == revDataBuffer[0])
 		{
 			point1 = 0;
@@ -201,7 +282,26 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		{
 			if('\n' == revDataBuffer[0])
 			{
-				
+				memset(GPGSABUffer,0,65);
+				memcpy(GPGSABUffer,USART_RX_BUF,point1);
+				//
+				point1 = 0;
+				GPGSAFlag = 1;
+				memset(USART_RX_BUF,0,USART_REC_LEN);
+			}
+		}
+		
+		/* $GPGSV */
+		if('$' == USART_RX_BUF[0] && 'S' == USART_RX_BUF[4] && 'V' == USART_RX_BUF[5])
+		{
+			if('\n' == revDataBuffer[0])
+			{
+				memset(GPGSVBuffer,0,210);
+				memcpy(GPGSVBuffer,USART_RX_BUF,point1);
+				//
+				point1 = 0;
+				GPGSVFlag = 1;
+				memset(USART_RX_BUF,0,USART_REC_LEN);
 			}
 		}
 		
@@ -212,6 +312,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 		
 		while(HAL_OK != HAL_UART_Receive_IT(&huart1, revDataBuffer, 1));
 	}
+	/* 处理MPU6050数据 */
+	HAL_MPU6050_RxCpltCallback(huart);
 }
 
 #endif

@@ -29,6 +29,7 @@
 "pro\usb_device.o"
 "pro\ubloxgps.o"
 "pro\lcd.o"
+"pro\mpu6050.o"
 "pro\usbd_core.o"
 "pro\usbd_cdc.o"
 "pro\usbd_ctlreq.o"

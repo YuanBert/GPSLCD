@@ -57,6 +57,7 @@
 /* USER CODE BEGIN Includes */
 #include "ubloxgps.h"
 #include "lcd.h"
+#include "mpu6050.h"
 //#include "delay.h"
 /* USER CODE END Includes */
 
@@ -64,6 +65,11 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
+uint8_t UTC[20];
+uint8_t LatLongInfo[30];
+uint8_t PositingInfo[30];
+uint8_t GroundSpeedInfo[30];
+uint8_t GroundCourseinfo[30];
 
 /* USER CODE END PV */
 
@@ -88,7 +94,7 @@ static void MX_NVIC_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	u8 navigationBuffer[50];
+
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -109,21 +115,19 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_USART1_UART_Init();
-  MX_USART2_UART_Init();
   MX_TIM5_Init();
   MX_USB_DEVICE_Init();
 
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
+  MPU6050_Init();
   GPS_Init();
   LCD_Init();
   LED_Init();
   POINT_COLOR=RED; 
   LCD_Clear(BLUE);
-  
-  sprintf((char*)navigationBuffer,"PDOP:%s Satellites:%s MODE:%c","0.57","10",'N');
+  LCD_Display_Dir(1);	
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -134,16 +138,21 @@ int main(void)
   /* USER CODE END WHILE */
 
   /* USER CODE BEGIN 3 */
-  POINT_COLOR=RED;
-  LCD_Display_Dir(1);	  
-  LCD_ShowString(40,40,200,24,24,(uint8_t*)"Navigation System");	
-  LCD_ShowString(30,70,300,16,16,(uint8_t*)navigationBuffer);
-  LCD_ShowString(30,90,300,16,16,(uint8_t*)"GPS Satellites in View:");
-  LCD_ShowString(30,110,300,16,16,(uint8_t*)"GPS");
-  LCD_ShowString(30,130,300,12,12,(uint8_t*)"2017/6/2");
+  	GPS_parseGpsBuffer();
+	GPS_printGpsBuffer();
+//  LCD_ShowString(30,70,300,16,16,(uint8_t*)navigationBuffer);
+//  LCD_ShowString(30,90,300,16,16,(uint8_t*)"GPS Satellites in View:");
+//  LCD_ShowString(30,110,300,16,16,(uint8_t*)"GPS");
+//  LCD_ShowString(30,130,300,12,12,(uint8_t*)"2017/6/2");
 	  
-  LED0=!LED0;
-  HAL_Delay(1000);
+//  LED0=!LED0;
+//  HAL_Delay(1000);
+	  
+	LCD_ShowString(5,5,240,12,12,(uint8_t*)UTC);//显示UTC时间信息
+	LCD_ShowString(40,40,200,24,24,(uint8_t*)"Navigation System");
+	LCD_ShowString(30,90,300,16,16,PositingInfo);
+	LCD_ShowString(30,110,300,16,16,LatLongInfo);
+	LCD_ShowString(30,130,300,16,16,GroundSpeedInfo);
 
   }
   /* USER CODE END 3 */
