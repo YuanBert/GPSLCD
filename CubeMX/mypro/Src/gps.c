@@ -10,6 +10,9 @@ extern uint8_t GroundSpeedInfo[30];
 extern uint8_t GroundCourseinfo[30];
 
 _SaveData Save_Data;
+
+uint8_t GPSDataFlag;
+
 uint8_t GPGSAFlag;
 uint8_t GPGSABUffer[65];
 
@@ -167,6 +170,7 @@ void GPS_dataPrase()
 	if(Save_Data.isParseData)
 	{
 		Save_Data.isParseData = false;
+		GPSDataFlag = 1;
 		/* printf() */
 //		printf("UTC:%s",Save_Data.UTCTime);
 		sprintf((char*)UTC,"UTC:%s",Save_Data.UTCTime);

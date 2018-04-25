@@ -39,6 +39,9 @@ typedef struct SaveData
 }_SaveData;
 
 extern _SaveData Save_Data;
+
+extern uint8_t GPSDataFlag;
+
 extern uint8_t GPGSAFlag;
 extern uint8_t GPGSABUffer[65];
 

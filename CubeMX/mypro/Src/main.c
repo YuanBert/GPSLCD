@@ -56,8 +56,9 @@
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
-uint8_t MPU6050Buffer[30];
-uint8_t MPU6050Buffer1[30];
+static uint8_t MPU6050Buffer[30];
+static uint8_t MPU6050Buffer1[30];
+static uint8_t ClearBuffer[30] = {0};
 uint16_t gTim3Cnt;
 uint8_t gTim3Flag;
 
@@ -142,22 +143,37 @@ int main(void)
   /* USER CODE BEGIN 3 */
 	  GPS_dataPrase();
 	  MPU6050_PraseData();
-	  sprintf((char*)MPU6050Buffer,"ax=%3.2f ay =%3.2f az=%3.2f",gMPU6050_Info.ax,gMPU6050_Info.ay,gMPU6050_Info.az);
-	  sprintf((char*)MPU6050Buffer1,"wx=%3.2f wy =%3.2f wz=%3.2f",gMPU6050_Info.wx,gMPU6050_Info.wy,gMPU6050_Info.wz);
+
 	  
 	  if(1 == gTim3Flag)
 	  {
 		gTim3Flag = 0;
-		POINT_COLOR=RED; 
-		LCD_Display_Dir(1);
-		LCD_ShowString(5,5,360,12,12,(uint8_t*)UTC);//显示UTC时间信息
-		LCD_ShowString(40,40,200,24,24,(uint8_t*)"Navigation System");
-		LCD_ShowString(30,90,300,16,16,PositingInfo);
-		
-		LCD_ShowString(30,110,300,16,16,LatLongInfo);
-		LCD_ShowString(30,130,300,16,16,GroundSpeedInfo);
-		LCD_ShowString(20,150,360,12,12,MPU6050Buffer);  
-		LCD_ShowString(20,170,360,12,12,MPU6050Buffer1);  
+		  
+		  if(1 == gMPU6050_Info.flag)
+		  {
+			  sprintf((char*)MPU6050Buffer,"ax=%.2f ay=%.2f az=%.2f",gMPU6050_Info.ax,gMPU6050_Info.ay,gMPU6050_Info.az);
+			  sprintf((char*)MPU6050Buffer1,"wx=%.2f wy=%.2f wz=%.2f",gMPU6050_Info.wx,gMPU6050_Info.wy,gMPU6050_Info.wz);
+			  
+			  LCD_ShowString(20,150,360,12,12,ClearBuffer);  
+			  LCD_ShowString(20,170,360,12,12,ClearBuffer); 
+			  
+			  LCD_ShowString(20,150,360,12,12,MPU6050Buffer);  
+			  LCD_ShowString(20,170,360,12,12,MPU6050Buffer1); 
+			  memset(MPU6050Buffer, 0, 30);
+			  memset(MPU6050Buffer1,0, 30);
+			  gMPU6050_Info.flag = 0;
+		  }
+//		LCD_Clear(BLUE);
+//		POINT_COLOR=RED; 
+//		LCD_Display_Dir(1);
+//		LCD_ShowString(5,5,360,12,12,(uint8_t*)UTC);//显示UTC时间信息
+//		LCD_ShowString(40,40,200,24,24,(uint8_t*)"Navigation System");
+//		LCD_ShowString(30,90,300,16,16,PositingInfo);
+//		
+//		LCD_ShowString(30,110,300,16,16,LatLongInfo);
+//		LCD_ShowString(30,130,300,16,16,GroundSpeedInfo);
+//		LCD_ShowString(20,150,360,12,12,MPU6050Buffer);  
+//		LCD_ShowString(20,170,360,12,12,MPU6050Buffer1);  
 		  
 		//sprintf((char*)MPU6050Buffer,"\r\nax=%.3fay =%.3faz=%.3f\r\n",gMPU6050_Info.ax,gMPU6050_Info.ay,gMPU6050_Info.az);
 		//HAL_UART_Transmit_IT(&huart1,MPU6050Buffer,30);
@@ -166,7 +182,27 @@ int main(void)
 		//HAL_UART_Transmit_IT(&huart1,(uint8_t*)PDOPString,4);
 		LED0=!LED0;
 	  }
-
+	  if(GPSDataFlag)
+	  {
+		POINT_COLOR=RED; 
+		LCD_Display_Dir(1);
+		  
+		LCD_ShowString(5,5,360,12,12,(uint8_t*)ClearBuffer);//显示UTC时间信息
+		LCD_ShowString(30,90,300,16,16,ClearBuffer);
+		LCD_ShowString(30,110,300,16,16,ClearBuffer);
+		LCD_ShowString(30,130,300,16,16,ClearBuffer);
+		LCD_ShowString(40,40,200,24,24,(uint8_t*)"Navigation System");  
+		LCD_ShowString(5,5,360,12,12,(uint8_t*)UTC);//显示UTC时间信息
+		LCD_ShowString(30,90,300,16,16,PositingInfo);
+		LCD_ShowString(30,110,300,16,16,LatLongInfo);
+		LCD_ShowString(30,130,300,16,16,GroundSpeedInfo);
+		memset(UTC,0,30);
+		memset(PositingInfo,0,30);
+		memset(LatLongInfo,0,30);
+		memset(GroundCourseinfo,0,30);
+		GPSDataFlag = 0;
+	  }
+	   
   }
   /* USER CODE END 3 */
 
@@ -269,7 +305,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if(htim->Instance == htim3.Instance)
 	{
 		gTim3Cnt++;
-		if(gTim3Cnt > 10)
+		if(gTim3Cnt > 99)
 		{
 			gTim3Flag = 1;
 			gTim3Cnt = 0;
