@@ -1,8 +1,14 @@
 #include "gps.h"
 #include "usart.h"
 #include "string.h"
+#include "gpio.h"
+#include "stdlib.h"
+#include "stdio.h"
 
-
+extern float gSpeed;
+extern double gDistance;
+extern uint8_t gInitFlag;
+extern uint8_t gNGPSflag;
 extern uint8_t UTC[30];
 extern uint8_t LatLongInfo[30];
 extern uint8_t PositingInfo[30];
@@ -77,6 +83,8 @@ void GPS_dataPrase()
 	char *subString;
 	char *subStringNext;
 	char i = 0;
+	uint8_t cmd[2];
+	cmd[0] = 0x52;
 	
 	if(0 == gRevFlag)
 	{
@@ -182,6 +190,11 @@ void GPS_dataPrase()
 			sprintf((char *)PositingInfo,"PDOP:%s Satellites:%s MODE:%c",PDOPString,SIViewString,'G');
 			sprintf((char *)LatLongInfo,"%s:%s %s:%s",Save_Data.latitude,Save_Data.E_W,Save_Data.longitude,Save_Data.N_S);
 			sprintf((char *)GroundSpeedInfo,"%s knot",Save_Data.Ground_Speed);
+			gSpeed = atof(Save_Data.Ground_Speed);//速度
+			
+			gInitFlag = 1;
+			gNGPSflag = 0;
+			gDistance = 0.0;
 		}
 		else
 		{
@@ -189,6 +202,15 @@ void GPS_dataPrase()
 			sprintf((char *)PositingInfo,"PDOP:%s Satellites:%s MODE:%c",PDOPString,SIViewString,'N');
 			sprintf((char *)LatLongInfo,"%s:%s %s:%s",Save_Data.latitude,Save_Data.E_W,Save_Data.longitude,Save_Data.N_S);
 			sprintf((char *)GroundSpeedInfo,"%s knot",Save_Data.Ground_Speed);
+			
+			gSpeed = atof(Save_Data.Ground_Speed);//速度
+			
+			/* 角度初始化 */
+			if(0 == gNGPSflag)
+			{
+				HAL_UART_Transmit_IT(&huart2,cmd,1);
+				gNGPSflag = 1;
+			}
 		}	
 	}
 	

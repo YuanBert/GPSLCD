@@ -62,6 +62,11 @@ static uint8_t ClearBuffer[30] = {0};
 uint16_t gTim3Cnt;
 uint8_t gTim3Flag;
 
+uint8_t gInitFlag;
+uint8_t gNGPSflag;
+float gSpeed;
+double gDistance;
+
 uint8_t UTC[30];
 uint8_t LatLongInfo[30];
 uint8_t PositingInfo[30];
@@ -121,10 +126,11 @@ int main(void)
   /* Initialize interrupts */
   MX_NVIC_Init();
   /* USER CODE BEGIN 2 */
+  gInitFlag = 0;
   LCD_Init();
   LED_Init();
   MPU6050_Init();
-    POINT_COLOR=RED; 
+  POINT_COLOR=RED; 
   LCD_Clear(BLUE);
   LCD_Display_Dir(1);
   HAL_TIM_Base_Start_IT(&htim3);
@@ -162,6 +168,11 @@ int main(void)
 			  memset(MPU6050Buffer, 0, 30);
 			  memset(MPU6050Buffer1,0, 30);
 			  gMPU6050_Info.flag = 0;
+		  }
+		  /* 惯性导航，GPS信号丢失之后的角度 */
+		  if(1 == gNGPSflag && 1 == gInitFlag)
+		  {
+			  gDistance += (gSpeed*0.514 + 4.9 * a[1]);
 		  }
 //		LCD_Clear(BLUE);
 //		POINT_COLOR=RED; 
