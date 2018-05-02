@@ -50,6 +50,7 @@
 #include "mpu6050.h"
 #include "gps.h"
 #include "lcd.h"
+#include "math.h"
 /* USER CODE END Includes */
 
 /* Private variables ---------------------------------------------------------*/
@@ -61,11 +62,17 @@ static uint8_t MPU6050Buffer1[30];
 static uint8_t ClearBuffer[30] = {0};
 uint16_t gTim3Cnt;
 uint8_t gTim3Flag;
+uint8_t gTim3UpdataFlag;
 
 uint8_t gInitFlag;
 uint8_t gNGPSflag;
+float gZangle;
 float gSpeed;
+float gAngle;
 double gDistance;
+float gInslongitude;
+float gInslatitude;
+double gEarthRadio;
 
 uint8_t UTC[30];
 uint8_t LatLongInfo[30];
@@ -81,7 +88,18 @@ static void MX_NVIC_Init(void);
 
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
-
+float Du2Fen(float data)
+{
+	float re;
+	uint16_t du;
+	uint16_t fen;
+	float miao;
+	du = (uint16_t)data;
+	fen = (uint16_t)((data - du) * 60.0);
+	miao = (data - du) * 60.0 - fen;
+	re = du * 1000 + fen + miao;
+	return re;
+}
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
@@ -96,7 +114,9 @@ static void MX_NVIC_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-	
+	uint8_t data = 0x52;
+	float angle; 
+	gEarthRadio = 6371393.0;
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -130,13 +150,25 @@ int main(void)
   LCD_Init();
   LED_Init();
   MPU6050_Init();
-  POINT_COLOR=RED; 
-  LCD_Clear(BLUE);
-  LCD_Display_Dir(1);
   HAL_TIM_Base_Start_IT(&htim3);
   //HAL_TIM_Base_Start_IT(&htim5);
   __HAL_UART_ENABLE_IT(&huart1,UART_IT_RXNE);
   __HAL_UART_ENABLE_IT(&huart2,UART_IT_RXNE);
+  
+  POINT_COLOR=RED; 
+  LCD_Clear(BLUE);
+  LCD_Display_Dir(1);
+  
+	LCD_ShowString(40,40,500,12,12,(uint8_t*)"Horizontal placement,calibration...");  
+	HAL_Delay(4500);
+	HAL_UART_Transmit(&huart2,&data,1,0xFFFF);
+	LCD_Clear(BLUE);
+	LCD_ShowString(40,40,500,12,12,(uint8_t*)"calibration OK..."); 
+	HAL_Delay(500);
+	POINT_COLOR=RED; 
+	LCD_Clear(BLUE);
+	LCD_Display_Dir(1);
+	
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -158,41 +190,47 @@ int main(void)
 		  if(1 == gMPU6050_Info.flag)
 		  {
 			  sprintf((char*)MPU6050Buffer,"ax=%.2f ay=%.2f az=%.2f",gMPU6050_Info.ax,gMPU6050_Info.ay,gMPU6050_Info.az);
-			  sprintf((char*)MPU6050Buffer1,"wx=%.2f wy=%.2f wz=%.2f",gMPU6050_Info.wx,gMPU6050_Info.wy,gMPU6050_Info.wz);
+			  sprintf((char*)MPU6050Buffer1,"Ax=%.2f Ay=%.2f Az=%.2f",gMPU6050_Info.anglex,gMPU6050_Info.angley,gMPU6050_Info.anglez);
 			  
 			  LCD_ShowString(20,150,360,12,12,ClearBuffer);  
-			  LCD_ShowString(20,170,360,12,12,ClearBuffer); 
+			  LCD_ShowString(20,170,360,12,12,ClearBuffer);
 			  
+			  LCD_ShowString(40,40,200,24,24,(uint8_t*)"Navigation System");  
 			  LCD_ShowString(20,150,360,12,12,MPU6050Buffer);  
 			  LCD_ShowString(20,170,360,12,12,MPU6050Buffer1); 
 			  memset(MPU6050Buffer, 0, 30);
 			  memset(MPU6050Buffer1,0, 30);
 			  gMPU6050_Info.flag = 0;
 		  }
-		  /* 惯性导航，GPS信号丢失之后的角度 */
-		  if(1 == gNGPSflag && 1 == gInitFlag)
-		  {
-			  gDistance += (gSpeed*0.514 + 4.9 * a[1]);
-		  }
-//		LCD_Clear(BLUE);
-//		POINT_COLOR=RED; 
-//		LCD_Display_Dir(1);
-//		LCD_ShowString(5,5,360,12,12,(uint8_t*)UTC);//显示UTC时间信息
-//		LCD_ShowString(40,40,200,24,24,(uint8_t*)"Navigation System");
-//		LCD_ShowString(30,90,300,16,16,PositingInfo);
-//		
-//		LCD_ShowString(30,110,300,16,16,LatLongInfo);
-//		LCD_ShowString(30,130,300,16,16,GroundSpeedInfo);
-//		LCD_ShowString(20,150,360,12,12,MPU6050Buffer);  
-//		LCD_ShowString(20,170,360,12,12,MPU6050Buffer1);  
-		  
-		//sprintf((char*)MPU6050Buffer,"\r\nax=%.3fay =%.3faz=%.3f\r\n",gMPU6050_Info.ax,gMPU6050_Info.ay,gMPU6050_Info.az);
-		//HAL_UART_Transmit_IT(&huart1,MPU6050Buffer,30);
-		//HAL_Delay(10);
-		//HAL_UART_Transmit_IT(&huart1,(uint8_t*)Save_Data.UTCTime,5);
-		//HAL_UART_Transmit_IT(&huart1,(uint8_t*)PDOPString,4);
 		LED0=!LED0;
 	  }
+		  /* 惯性导航，GPS信号丢失之后的角度 - 1s */
+	  if(gTim3UpdataFlag)
+	  {
+		gTim3UpdataFlag = 0;
+		if(1 == gNGPSflag && 1 == gInitFlag)
+		{
+			gDistance += (gSpeed*0.514 + 4.9 * a[1]);
+			
+			//angle = Du2Fen(gZangle);
+			gInslongitude = (sin(angle/3.1415) * gDistance)/gEarthRadio;
+			gInslongitude = Du2Fen(gInslongitude) + atof(Save_Data.longitude);
+			
+			gInslatitude = atof(Save_Data.latitude);
+			gInslatitude =  gInslatitude + Du2Fen(gMPU6050_Info.anglez - gZangle);
+		
+			sprintf((char *)LatLongInfo,"%.3f:%s %.3f:%s",gInslatitude,Save_Data.E_W,gInslongitude,Save_Data.N_S);
+			LCD_ShowString(30,110,300,16,16,LatLongInfo);
+		}
+		else
+		{
+			gDistance = 0;
+			gInslongitude = 0;
+			gInslatitude = 0;
+			
+		}			
+	  }
+	  
 	  if(GPSDataFlag)
 	  {
 		POINT_COLOR=RED; 
@@ -311,14 +349,17 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 	if(htim->Instance == htim5.Instance)
 	{
 		timeCnt++;
+		
 	}
 	
 	if(htim->Instance == htim3.Instance)
 	{
+		gTim3Flag = 1;
+		
 		gTim3Cnt++;
-		if(gTim3Cnt > 99)
+		if(gTim3Cnt > 9)
 		{
-			gTim3Flag = 1;
+			gTim3UpdataFlag = 1;
 			gTim3Cnt = 0;
 		}
 	}

@@ -4,7 +4,10 @@
 #include "gpio.h"
 #include "stdlib.h"
 #include "stdio.h"
+#include "mpu6050.h"
 
+extern float gZangle;
+extern float gAngle;
 extern float gSpeed;
 extern double gDistance;
 extern uint8_t gInitFlag;
@@ -195,6 +198,8 @@ void GPS_dataPrase()
 			gInitFlag = 1;
 			gNGPSflag = 0;
 			gDistance = 0.0;
+			gZangle = gMPU6050_Info.anglez;
+			
 		}
 		else
 		{
@@ -204,11 +209,12 @@ void GPS_dataPrase()
 			sprintf((char *)GroundSpeedInfo,"%s knot",Save_Data.Ground_Speed);
 			
 			gSpeed = atof(Save_Data.Ground_Speed);//速度
+			gAngle = atof(Save_Data.Ground_Course);//方向角
 			
 			/* 角度初始化 */
 			if(0 == gNGPSflag)
 			{
-				HAL_UART_Transmit_IT(&huart2,cmd,1);
+				//HAL_UART_Transmit_IT(&huart2,cmd,1);
 				gNGPSflag = 1;
 			}
 		}	

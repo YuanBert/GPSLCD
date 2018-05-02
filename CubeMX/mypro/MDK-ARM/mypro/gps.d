@@ -31,3 +31,4 @@ mypro\gps.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_uart.h
 mypro\gps.o: ../Inc/usart.h
 mypro\gps.o: ../Inc/gpio.h
 mypro\gps.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
+mypro\gps.o: ../Inc/mpu6050.h

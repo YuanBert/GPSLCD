@@ -35,3 +35,4 @@ mypro\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\stdlib.h
 mypro\main.o: ../Inc/mpu6050.h
 mypro\main.o: ../Inc/gps.h
 mypro\main.o: ../Inc/lcd.h
+mypro\main.o: C:\Keil_v5\ARM\ARMCC\Bin\..\include\math.h
