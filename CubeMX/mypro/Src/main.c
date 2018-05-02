@@ -115,8 +115,11 @@ int main(void)
 {
   /* USER CODE BEGIN 1 */
 	uint8_t data = 0x52;
+	float ggInslongitude;
+	float ggInslatitude;
 	float angle; 
 	gEarthRadio = 6371393.0;
+
   /* USER CODE END 1 */
 
   /* MCU Configuration----------------------------------------------------------*/
@@ -213,13 +216,14 @@ int main(void)
 			gDistance += (gSpeed*0.514 + 4.9 * a[1]);
 			
 			//angle = Du2Fen(gZangle);
-			gInslongitude = (sin(angle/3.1415) * gDistance)/gEarthRadio;
-			gInslongitude = Du2Fen(gInslongitude) + atof(Save_Data.longitude);
-			
-			gInslatitude = atof(Save_Data.latitude);
-			gInslatitude =  gInslatitude + Du2Fen(gMPU6050_Info.anglez - gZangle);
+			ggInslongitude = gInslongitude + Du2Fen(180.0*3.14*(sin(angle/3.1415) * gDistance)/gEarthRadio);
+//			gInslongitude = Du2Fen(gInslongitude) + atof(Save_Data.longitude);
+//			
+//			gInslatitude = atof(Save_Data.latitude);
+			ggInslatitude =  gInslatitude + Du2Fen(gMPU6050_Info.anglez - gZangle);
 		
-			sprintf((char *)LatLongInfo,"%.3f:%s %.3f:%s",gInslatitude,Save_Data.E_W,gInslongitude,Save_Data.N_S);
+			sprintf((char *)LatLongInfo,"%.3f:N %.3f:W",ggInslatitude,ggInslongitude);
+			LCD_ShowString(30,110,300,16,16,(uint8_t*)"                                        ");
 			LCD_ShowString(30,110,300,16,16,LatLongInfo);
 		}
 		else

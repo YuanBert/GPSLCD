@@ -6,6 +6,8 @@
 #include "stdio.h"
 #include "mpu6050.h"
 
+extern float gInslatitude;
+extern float gInslongitude;
 extern float gZangle;
 extern float gAngle;
 extern float gSpeed;
@@ -195,6 +197,9 @@ void GPS_dataPrase()
 			sprintf((char *)GroundSpeedInfo,"%s knot",Save_Data.Ground_Speed);
 			gSpeed = atof(Save_Data.Ground_Speed);//速度
 			
+			gInslatitude = atof(Save_Data.latitude);
+			gInslongitude = atof(Save_Data.longitude);
+			
 			gInitFlag = 1;
 			gNGPSflag = 0;
 			gDistance = 0.0;
@@ -207,6 +212,9 @@ void GPS_dataPrase()
 			sprintf((char *)PositingInfo,"PDOP:%s Satellites:%s MODE:%c",PDOPString,SIViewString,'N');
 			sprintf((char *)LatLongInfo,"%s:%s %s:%s",Save_Data.latitude,Save_Data.E_W,Save_Data.longitude,Save_Data.N_S);
 			sprintf((char *)GroundSpeedInfo,"%s knot",Save_Data.Ground_Speed);
+			
+			gInslatitude = atof(Save_Data.latitude);
+			gInslongitude = atof(Save_Data.longitude);
 			
 			gSpeed = atof(Save_Data.Ground_Speed);//速度
 			gAngle = atof(Save_Data.Ground_Course);//方向角
